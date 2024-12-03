@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Model Deployment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+        }
+        .container {
+            width: 400px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        input[type="text"], button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Predict Stress Level</h2>
+        <form id="predictionForm">
+            <label for="tp9Input">TP9</label>
+            <input type="text" id="tp9Input" placeholder="Enter TP9 value">
+
+            <label for="af7Input">AF7</label>
+            <input type="text" id="af7Input" placeholder="Enter AF7 value">
+
+            <label for="af8Input">AF8</label>
+            <input type="text" id="af8Input" placeholder="Enter AF8 value">
+
+            <label for="tp10Input">TP10</label>
+            <input type="text" id="tp10Input" placeholder="Enter TP10 value">
+
+            <button type="button" onclick="makePrediction()">Predict</button>
+        </form>
+        <p id="result"></p>
+        <p id="error" class="error"></p>
+    </div>
+    <script>
+        async function makePrediction() {
+            // Clear previous results and errors
+            document.getElementById('result').textContent = '';
+            document.getElementById('error').textContent = '';
+
+            // Get input values
+            const tp9 = document.getElementById('tp9Input').value;
+            const af7 = document.getElementById('af7Input').value;
+            const af8 = document.getElementById('af8Input').value;
+            const tp10 = document.getElementById('tp10Input').value;
+
+            // Validate input
+            if (!tp9 || !af7 || !af8 || !tp10) {
+                document.getElementById('error').textContent = 'All fields are required.';
+                return;
+            }
+
+            // Prepare data
+            const inputData = [tp9, af7, af8, tp10].map(Number);
+            if (inputData.some(isNaN)) {
+                document.getElementById('error').textContent = 'Please enter valid numeric values.';
+                return;
+            }
+
+            try {
+                // Send API request
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: inputData })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch prediction');
+                }
+
+                const result = await response.json();
+                document.getElementById('result').textContent = `Prediction: ${result.prediction}`;
+            } catch (error) {
+                document.getElementById('error').textContent = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
